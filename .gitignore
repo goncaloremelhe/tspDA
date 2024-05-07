@@ -1,0 +1,35 @@
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+cmake-build-debug/
+Makefile
+
+# Compiled binaries
+bin/
+lib/
+build/
+
+# Compiled object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+
+# Ignore Visual Studio Code files
+.vscode/
+
+# Ignore JetBrains IDE files
+.idea/
+
+# Ignore project-specific files (adjust this based on your project structure)
+project-specific-file.txt
+
+#Ignore doxygen html
+/html/
+
+# Ignore latex file
+/latex/
+
