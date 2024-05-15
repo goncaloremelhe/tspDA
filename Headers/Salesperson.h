@@ -5,6 +5,8 @@
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -21,6 +23,10 @@ public:
     void readToyCSV(const string& path, bool hasName);
     void readExtraCSV(const string& path, int lines);
     Graph<int> getGraph();
+
+    void completeGraph();
+    double otherHeuristicFast();
+    double haversineDistance(double latA, double lonA, double latB, double lonB);
 };
 
 

@@ -186,3 +186,75 @@ Graph<int> Salesperson::getGraph() {
     return salesperson;
 }
 
+double Salesperson::haversineDistance(double latA, double lonA, double latB, double lonB) {
+    latA = (latA) * M_PI / 180.0;
+    latB = (latB) * M_PI / 180.0;
+
+    lonA = (lonA) * M_PI / 180.0;
+    lonB = (lonB) * M_PI / 180.0;
+
+    double vlat = latB - latA;
+    double vlon = lonB - lonA;
+
+    double a = pow(sin(vlat / 2), 2) + pow(sin(vlon / 2), 2) * cos(latA) * cos(latB);
+    double rad = 6365000;
+    double c = 2 * asin(sqrt(a));
+    return rad * c;
+}
+
+void Salesperson::completeGraph() {
+    int size = salesperson.getNumVertex();
+    for (auto v : salesperson.getVertexSet()) {
+        if (v->getAdj().size() != size - 1) {
+            bool hasEdge[size];
+            for (int i = 0; i < size; i++) {
+                hasEdge[i] = false;
+            }
+            hasEdge[v->getInfo()] = true;
+            for (auto edge : v->getAdj()) {
+                hasEdge[edge->getDest()->getInfo()] = true;
+            }
+            for (int i = 0; i < size; i++) {
+                if (!hasEdge[i]) {
+                    nodeMap[v->getInfo()].first;
+                    double latA = nodeMap[v->getInfo()].second, lonA = nodeMap[v->getInfo()].first;
+                    double latB = nodeMap[i].second, lonB = nodeMap[i].first;
+                    double cost = haversineDistance(latA, lonA, latB, lonB);
+                    salesperson.addBidirectionalEdge(v->getInfo(), i, cost);
+                }
+            }
+        }
+    }
+}
+
+double Salesperson::otherHeuristicFast() {
+    double cost = 0.0;
+    for (auto v : salesperson.getVertexSet()) {
+        v->setPath(NULL);
+        v->setVisited(false);
+    }
+    Vertex<int>* vertex = salesperson.findVertex(0);
+    vertex->setVisited(true);
+    for (int i = 0; i < salesperson.getNumVertex(); i++) {
+        Edge<int>* nearestNeighbour = nullptr;
+        double nearestDistance = INF;
+        for (auto edge : vertex->getAdj()) {
+            if (!edge->getDest()->isVisited() and edge->getWeight() < nearestDistance) {
+                nearestDistance = edge->getWeight();
+                nearestNeighbour = edge;
+            }
+
+            if (i == salesperson.getNumVertex() - 1 && edge->getDest()->getInfo() == 0) {
+                nearestDistance = edge->getWeight();
+                nearestNeighbour = edge;
+            }
+        }
+
+        vertex->setPath(nearestNeighbour);
+        vertex = nearestNeighbour->getDest();
+        vertex->setVisited(true);
+        cost += nearestDistance;
+    }
+
+    return cost;
+}
