@@ -21,7 +21,9 @@ void Menu::printAlgorithmChoiceMenu() {
     cout    << "Which algorithm would you like to run?" << endl;
     cout    << "1. Backtracking algorithm"<< endl;
     cout    << "2. Triangular approximation algorithm"<< endl;
-    cout    << "4. Exit" << endl;
+    cout    << "3. Other heuristic"<< endl;
+    cout    << "4. TSP in the real world"<< endl;
+    cout    << "5. Exit" << endl;
 }
 
 void Menu::runAlgorithmChoiceMenu(){
@@ -40,7 +42,13 @@ void Menu::runAlgorithmChoiceMenu(){
             case 2:
                 //run triangular approx.
                 break;
+            case 3:
+                //run other heuristic
+                break;
             case 4:
+                //run tsp irl
+                break;
+            case 5:
                 cout << "Goodbye ! (˶ᵔ ᵕ ᵔ˶)"<< endl;
                 return;
             default:

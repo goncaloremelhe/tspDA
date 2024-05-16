@@ -186,7 +186,7 @@ Graph<int> Salesperson::getGraph() {
     return salesperson;
 }
 
-void Salesperson::tsp(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
+void Salesperson::tspWork(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
     curr->setVisited(true);
     path.push_back(curr->getInfo());
 
@@ -224,7 +224,7 @@ pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex,
     double currentCost = 0,bestCost = numeric_limits<double>::infinity();
     vector<int> currentPath, bestPath;
 
-    tsp(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
+    tspWork(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
 
 
     auto end_time = std::chrono::steady_clock::now();
