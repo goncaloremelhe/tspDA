@@ -33,6 +33,7 @@ public:
     void tspWork(Vertex<int> *curr, Vertex<int> *start, vector<int> &path, double &pathCost, vector<int> &bestPath, double &bestCost);
 
     pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, double &timeTaken);
+
 };
 
 
