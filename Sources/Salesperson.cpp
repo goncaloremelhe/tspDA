@@ -59,7 +59,7 @@ void Salesperson::readRealWorld() {
 }
 
 void Salesperson::readExtra() {
-    cout << "You chose the Real World Graphs!" << endl;
+    cout << "You chose the Extra Graphs!" << endl;
     cout << "How many nodes do you want to read?" << endl;
     cout << "Options: 25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800 or 900" << endl;
     vector<string> options = {"25", "50", "75", "100", "200", "300", "400", "500", "600", "700", "800", "900"};
@@ -190,7 +190,7 @@ Graph<int> Salesperson::getGraph() {
 void Salesperson::primMST(Vertex<int>* root) {
 
     //graph cleanup
-    for(Vertex<int>* v : salesperson.getVertexSet()) {
+    for (Vertex<int> *v: salesperson.getVertexSet()) {
         v->setVisited(false);
         v->setDist(INF);
         v->setPath(nullptr);
@@ -201,33 +201,72 @@ void Salesperson::primMST(Vertex<int>* root) {
     MutablePriorityQueue<Vertex<int>> q;
     q.insert(root);
 
-    while(!q.empty()) {
+    while (!q.empty()) {
 
-        Vertex<int>* v = q.extractMin();
+        Vertex<int> *v = q.extractMin();
         v->setVisited(true);
 
-        for(Edge<int>* &e : v->getAdj()) {
-            Vertex<int>* dest = e->getDest();
+        for (Edge<int> *&e: v->getAdj()) {
+            Vertex<int> *dest = e->getDest();
 
             if (!dest->isVisited()) {
 
                 double oldDist = dest->getDist();
 
-                if(e->getWeight() < oldDist) {
+                if (e->getWeight() < oldDist) {
                     dest->setDist(e->getWeight());
                     dest->setPath(e);
 
                     if (oldDist == INF) {
                         q.insert(dest);
-                    }
-                    else {
+                    } else {
                         q.decreaseKey(dest);
                     }
                 }
             }
         }
     }
+}
 
+double Salesperson::haversineDistance(double latA, double lonA, double latB, double lonB) {
+    latA = (latA) * M_PI / 180.0;
+    latB = (latB) * M_PI / 180.0;
+
+    lonA = (lonA) * M_PI / 180.0;
+    lonB = (lonB) * M_PI / 180.0;
+
+    double vlat = latB - latA;
+    double vlon = lonB - lonA;
+
+    double a = pow(sin(vlat / 2), 2) + pow(sin(vlon / 2), 2) * cos(latA) * cos(latB);
+    double rad = 6365000;
+    double c = 2 * asin(sqrt(a));
+    return rad * c;
+}
+
+void Salesperson::completeGraph() {
+    int size = salesperson.getNumVertex();
+    for (auto v : salesperson.getVertexSet()) {
+        if (v->getAdj().size() != size - 1) {
+            bool hasEdge[size];
+            for (int i = 0; i < size; i++) {
+                hasEdge[i] = false;
+            }
+            hasEdge[v->getInfo()] = true;
+            for (auto edge : v->getAdj()) {
+                hasEdge[edge->getDest()->getInfo()] = true;
+            }
+            for (int i = 0; i < size; i++) {
+                if (!hasEdge[i]) {
+                    nodeMap[v->getInfo()].first;
+                    double latA = nodeMap[v->getInfo()].second, lonA = nodeMap[v->getInfo()].first;
+                    double latB = nodeMap[i].second, lonB = nodeMap[i].first;
+                    double cost = haversineDistance(latA, lonA, latB, lonB);
+                    salesperson.addBidirectionalEdge(v->getInfo(), i, cost);
+                }
+            }
+        }
+    }
 }
 
 pair<vector<int>, double> Salesperson::twoApprox() {
@@ -254,4 +293,93 @@ pair<vector<int>, double> Salesperson::twoApprox() {
     return {path, cost};
 }
 
+double Salesperson::otherHeuristicFast(int n, double &timetaken) {
 
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
+    double cost = 0.0;
+    for (auto v : salesperson.getVertexSet()) {
+        v->setPath(NULL);
+        v->setVisited(false);
+    }
+    Vertex<int>* vertex = salesperson.findVertex(n);
+    vertex->setVisited(true);
+    for (int i = 0; i < salesperson.getNumVertex(); i++) {
+        Edge<int>* nearestNeighbour = nullptr;
+        double nearestDistance = INF;
+        for (auto edge : vertex->getAdj()) {
+            if (!edge->getDest()->isVisited() and edge->getWeight() < nearestDistance) {
+                nearestDistance = edge->getWeight();
+                nearestNeighbour = edge;
+            }
+
+            if (i == salesperson.getNumVertex() - 1 && edge->getDest()->getInfo() == n) {
+                nearestDistance = edge->getWeight();
+                nearestNeighbour = edge;
+            }
+        }
+
+        vertex->setPath(nearestNeighbour);
+        vertex = nearestNeighbour->getDest();
+        vertex->setVisited(true);
+        cost += nearestDistance;
+    }
+
+    auto end_time = std::chrono::steady_clock::now();
+
+    timetaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+
+    return cost;
+}
+
+void Salesperson::tspWork(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
+    curr->setVisited(true);
+    path.push_back(curr->getInfo());
+
+    if (path.size() == salesperson.getNumVertex()) {
+        for (auto e : curr->getAdj()) {
+            if (e->getDest() == start) {
+                double totalCost = pathCost + e->getWeight();
+                if (totalCost < bestCost) {
+                    bestPath = path;
+                    bestPath.push_back(start->getInfo());
+                    bestCost = totalCost;
+                }
+                break;
+            }
+        }
+    } else {
+        for (auto e : curr->getAdj()) {
+            Vertex<int>* next = e->getDest();
+            if (!next->isVisited()) {
+                pathCost += e->getWeight();
+                tspWork(next, start, path, pathCost, bestPath, bestCost);
+                pathCost -= e->getWeight();
+            }
+        }
+    }
+
+    path.pop_back();
+    curr->setVisited(false);
+}
+
+pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex, double& timeTaken) {
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
+    double currentCost = 0, bestCost = numeric_limits<double>::infinity();
+    vector<int> currentPath, bestPath;
+
+    for (auto vertex: salesperson.getVertexSet()) {
+        vertex->setVisited(false);
+    }
+
+    tspWork(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
+
+
+    auto end_time = std::chrono::steady_clock::now();
+
+    timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+
+    return {bestPath, bestCost};
+}
