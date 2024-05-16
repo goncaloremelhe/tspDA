@@ -207,7 +207,7 @@ void Salesperson::tspWork(Vertex<int>* curr, Vertex<int>* start, vector<int>& pa
             Vertex<int>* next = e->getDest();
             if (!next->isVisited()) {
                 pathCost += e->getWeight();
-                tsp(next, start, path, pathCost, bestPath, bestCost);
+                tspWork(next, start, path, pathCost, bestPath, bestCost);
                 pathCost -= e->getWeight();
             }
         }
