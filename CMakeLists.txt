@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(Headers main.cpp
         Headers/Graph.h
         Sources/Salesperson.cpp
-        Headers/Salesperson.h)
+        Headers/Salesperson.h
+        Sources/Menu.cpp)

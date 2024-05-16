@@ -58,7 +58,7 @@ void Salesperson::readRealWorld() {
 }
 
 void Salesperson::readExtra() {
-    cout << "You chose the Real World Graphs!" << endl;
+    cout << "You chose the Extra Graphs!" << endl;
     cout << "How many nodes do you want to read?" << endl;
     cout << "Options: 25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800 or 900" << endl;
     vector<string> options = {"25", "50", "75", "100", "200", "300", "400", "500", "600", "700", "800", "900"};
@@ -227,13 +227,16 @@ void Salesperson::completeGraph() {
     }
 }
 
-double Salesperson::otherHeuristicFast() {
+double Salesperson::otherHeuristicFast(int n, double &timetaken) {
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
     double cost = 0.0;
     for (auto v : salesperson.getVertexSet()) {
         v->setPath(NULL);
         v->setVisited(false);
     }
-    Vertex<int>* vertex = salesperson.findVertex(0);
+    Vertex<int>* vertex = salesperson.findVertex(n);
     vertex->setVisited(true);
     for (int i = 0; i < salesperson.getNumVertex(); i++) {
         Edge<int>* nearestNeighbour = nullptr;
@@ -244,7 +247,7 @@ double Salesperson::otherHeuristicFast() {
                 nearestNeighbour = edge;
             }
 
-            if (i == salesperson.getNumVertex() - 1 && edge->getDest()->getInfo() == 0) {
+            if (i == salesperson.getNumVertex() - 1 && edge->getDest()->getInfo() == n) {
                 nearestDistance = edge->getWeight();
                 nearestNeighbour = edge;
             }
@@ -256,5 +259,61 @@ double Salesperson::otherHeuristicFast() {
         cost += nearestDistance;
     }
 
+    auto end_time = std::chrono::steady_clock::now();
+
+    timetaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+
     return cost;
+}
+
+void Salesperson::tspWork(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
+    curr->setVisited(true);
+    path.push_back(curr->getInfo());
+
+    if (path.size() == salesperson.getNumVertex()) {
+        for (auto e : curr->getAdj()) {
+            if (e->getDest() == start) {
+                double totalCost = pathCost + e->getWeight();
+                if (totalCost < bestCost) {
+                    bestPath = path;
+                    bestPath.push_back(start->getInfo());
+                    bestCost = totalCost;
+                }
+                break;
+            }
+        }
+    } else {
+        for (auto e : curr->getAdj()) {
+            Vertex<int>* next = e->getDest();
+            if (!next->isVisited()) {
+                pathCost += e->getWeight();
+                tspWork(next, start, path, pathCost, bestPath, bestCost);
+                pathCost -= e->getWeight();
+            }
+        }
+    }
+
+    path.pop_back();
+    curr->setVisited(false);
+}
+
+pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex, double& timeTaken) {
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
+    double currentCost = 0,bestCost = numeric_limits<double>::infinity();
+    vector<int> currentPath, bestPath;
+
+    for (auto vertex : salesperson.getVertexSet()) {
+        vertex->setVisited(false);
+    }
+
+    tspWork(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
+
+
+    auto end_time = std::chrono::steady_clock::now();
+
+    timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+
+    return {bestPath,bestCost};
 }
