@@ -1,4 +1,5 @@
 #include "../Headers/Salesperson.h"
+#include "../Headers/MutablePriorityQueue.h"
 
 void Salesperson::readGraph(char option) {
     switch (option) {
@@ -185,4 +186,72 @@ void Salesperson::readExtraCSV(const string& path, int lines) {
 Graph<int> Salesperson::getGraph() {
     return salesperson;
 }
+
+void Salesperson::primMST(Vertex<int>* root) {
+
+    //graph cleanup
+    for(Vertex<int>* v : salesperson.getVertexSet()) {
+        v->setVisited(false);
+        v->setDist(INF);
+        v->setPath(nullptr);
+    }
+
+    root->setDist(0);
+
+    MutablePriorityQueue<Vertex<int>> q;
+    q.insert(root);
+
+    while(!q.empty()) {
+
+        Vertex<int>* v = q.extractMin();
+        v->setVisited(true);
+
+        for(Edge<int>* &e : v->getAdj()) {
+            Vertex<int>* dest = e->getDest();
+
+            if (!dest->isVisited()) {
+
+                double oldDist = dest->getDist();
+
+                if(e->getWeight() < oldDist) {
+                    dest->setDist(e->getWeight());
+                    dest->setPath(e);
+
+                    if (oldDist == INF) {
+                        q.insert(dest);
+                    }
+                    else {
+                        q.decreaseKey(dest);
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+pair<vector<int>, double> Salesperson::twoApprox() {
+
+    vector<int> path;
+    double cost = 0;
+
+    //start on 0 identifier node
+    Vertex<int>* root = salesperson.findVertex(0);
+
+    primMST(root);
+
+    cost += root->getPath()->getWeight();
+    path.push_back(root->getInfo());
+    Vertex<int>* currV = root->getPath()->getOrig();
+
+    //trace back path
+    while (currV->getInfo() != root->getInfo()) {
+        cost += currV->getPath()->getWeight();
+        path.push_back(currV->getInfo());
+        currV = currV->getPath()->getOrig();
+    }
+
+    return {path, cost};
+}
+
 

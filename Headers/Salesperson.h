@@ -20,6 +20,9 @@ public:
     void readExtra();
     void readToyCSV(const string& path, bool hasName);
     void readExtraCSV(const string& path, int lines);
+    void primMST(Vertex<int>* root);
+    pair<vector<int>, double> twoApprox();
+    void primDFS(vector<int>& res, Vertex<int>* source);
     Graph<int> getGraph();
 };
 

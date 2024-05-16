@@ -7,4 +7,5 @@ add_executable(Headers main.cpp
         Headers/Graph.h
         Sources/Salesperson.cpp
         Headers/Salesperson.h
-        Sources/Menu.cpp)
+        Sources/Menu.cpp
+        Headers/MutablePriorityQueue.h)

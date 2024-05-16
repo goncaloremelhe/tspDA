@@ -30,7 +30,9 @@ public:
     Edge<T> *getPath() const;
     std::vector<Edge<T> *> getIncoming() const;
     std::string getName() const;
+    int getQueueIndex() const;
 
+    void setQueueIndex(const int& qI);
     void setName(const std::string& name);
     void setInfo(T info);
     void setVisited(bool visited);
@@ -70,6 +72,17 @@ template<class T>
 std::string Vertex<T>::getName() const {
     return name;
 }
+
+template<class T>
+void Vertex<T>::setQueueIndex(const int& qI) {
+    this->queueIndex = qI;
+}
+
+template<class T>
+int Vertex<T>::getQueueIndex() const {
+    return queueIndex;
+}
+
 
 /********************** Edge  ****************************/
 
