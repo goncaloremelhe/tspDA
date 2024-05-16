@@ -5,6 +5,8 @@
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
+#include <chrono>
+#include "../Headers/Salesperson.h"
 
 using namespace std;
 
@@ -21,6 +23,12 @@ public:
     void readToyCSV(const string& path, bool hasName);
     void readExtraCSV(const string& path, int lines);
     Graph<int> getGraph();
+
+    void tsp(Vertex<int> *curr, Vertex<int> *start, vector<int> &path, double &pathCost, vector<int> &bestPath,
+             double &bestCost);
+
+
+    pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, long &timeTaken);
 };
 
 

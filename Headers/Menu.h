@@ -5,13 +5,21 @@
 
 #include "iostream"
 #include <iomanip>
+#include "../Headers/Salesperson.h"
 using namespace std;
 
 class Menu {
-    void printAlgorithmChoiceMenu();
+private:
+    Salesperson *salesperson;
 
 public:
+    Menu(Salesperson *s);
+    void printAlgorithmChoiceMenu();
     void runAlgorithmChoiceMenu();
+
+    void waitForInput() const;
+
+    void showBacktrackingResults();
 };
 
 

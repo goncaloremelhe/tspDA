@@ -186,3 +186,51 @@ Graph<int> Salesperson::getGraph() {
     return salesperson;
 }
 
+void Salesperson::tsp(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
+    curr->setVisited(true);
+    path.push_back(curr->getInfo());
+
+    if (path.size() == salesperson.getNumVertex()) {
+        for (auto e : curr->getAdj()) {
+            if (e->getDest() == start) {
+                double totalCost = pathCost + e->getWeight();
+                if (totalCost < bestCost) {
+                    bestPath = path;
+                    bestPath.push_back(start->getInfo());
+                    bestCost = totalCost;
+                }
+                break;
+            }
+        }
+    } else {
+        for (auto e : curr->getAdj()) {
+            Vertex<int>* next = e->getDest();
+            if (!next->isVisited()) {
+                pathCost += e->getWeight();
+                tsp(next, start, path, pathCost, bestPath, bestCost);
+                pathCost -= e->getWeight();
+            }
+        }
+    }
+
+    path.pop_back();
+    curr->setVisited(false);
+}
+
+pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex, long& timeTaken) {
+
+    auto time_start = chrono::high_resolution_clock::now();
+
+    double currentCost = 0,bestCost = numeric_limits<double>::infinity();
+    vector<int> currentPath, bestPath;
+
+    tsp(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
+
+
+    auto time_stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(time_stop - time_start);
+
+    timeTaken = duration.count();
+
+    return {bestPath,bestCost};
+}
