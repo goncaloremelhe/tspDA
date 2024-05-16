@@ -58,7 +58,7 @@ void Salesperson::readRealWorld() {
 }
 
 void Salesperson::readExtra() {
-    cout << "You chose the Real World Graphs!" << endl;
+    cout << "You chose the Extra Graphs!" << endl;
     cout << "How many nodes do you want to read?" << endl;
     cout << "Options: 25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800 or 900" << endl;
     vector<string> options = {"25", "50", "75", "100", "200", "300", "400", "500", "600", "700", "800", "900"};
@@ -217,9 +217,9 @@ void Salesperson::tsp(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, 
     curr->setVisited(false);
 }
 
-pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex, long& timeTaken) {
+pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex, double& timeTaken) {
 
-    auto time_start = chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
 
     double currentCost = 0,bestCost = numeric_limits<double>::infinity();
     vector<int> currentPath, bestPath;
@@ -227,10 +227,9 @@ pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex,
     tsp(startVertex, startVertex, currentPath, currentCost, bestPath, bestCost);
 
 
-    auto time_stop = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(time_stop - time_start);
+    auto end_time = std::chrono::steady_clock::now();
 
-    timeTaken = duration.count();
+    timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
     return {bestPath,bestCost};
 }

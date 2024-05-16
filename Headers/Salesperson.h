@@ -28,7 +28,7 @@ public:
              double &bestCost);
 
 
-    pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, long &timeTaken);
+    pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, double &timeTaken);
 };
 
 

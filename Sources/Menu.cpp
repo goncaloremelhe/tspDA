@@ -52,7 +52,7 @@ void Menu::runAlgorithmChoiceMenu(){
 }
 
 void Menu::showBacktrackingResults(){
-    long timeTaken;
+    double timeTaken;
     pair<vector <int>,double> results = salesperson->tspBacktracking(salesperson->getGraph().getVertexSet()[0],timeTaken);
     cout << "Best Cost: ";
     cout << results.second << endl;
@@ -66,6 +66,5 @@ void Menu::showBacktrackingResults(){
             cout << " -> ";
         }
     }
-
-    cout << "Time taken: " << timeTaken << " milliseconds" << endl;
+    cout << "Time taken: " <<  timeTaken << " seconds" << endl;
 }
