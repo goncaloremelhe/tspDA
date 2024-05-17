@@ -11,12 +11,27 @@ private:
     Salesperson *salesperson;
 
 public:
+    /**
+     * Menu constructor
+     * @param s
+     */
     Menu(Salesperson *s);
+    /**
+     * Prints the menu to choose an algorithm
+     */
     void printAlgorithmChoiceMenu();
+    /**
+     * Parses user inputs in the menu and prints results
+     */
     void runAlgorithmChoiceMenu();
-
+    /**
+     * Waits for user input in order to show results
+     */
     void waitForInput() const;
-
+    /**
+     * Shows the results after running the backtracking algorithm
+     * @details Time complexity:O(V!) + O(V+1), V being the number of vertices in the graph
+     */
     void showBacktrackingResults();
 };
 
