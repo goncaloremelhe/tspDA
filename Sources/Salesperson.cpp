@@ -420,6 +420,7 @@ pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex,
     std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
 
     double currentCost = 0, bestCost = numeric_limits<double>::infinity();
+
     vector<int> currentPath, bestPath;
 
     for (auto vertex: salesperson.getVertexSet()) {
