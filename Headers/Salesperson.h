@@ -82,7 +82,7 @@ public:
     void completeGraph();
     double otherHeuristicFast(int n, double &timetaken);
     /**
-     * Calculates the distance between 2 poins using the haversine formula
+     * Calculates the distance between 2 points using the haversine formula
      * @param latA
      * @param lonA
      * @param latB
