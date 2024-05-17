@@ -43,10 +43,11 @@ void Menu::runAlgorithmChoiceMenu(){
                 //run triangular approx.
                 break;
             case 3:
-                //run other heuristic
+                showOtherHeuristicResults();
+                waitForInput();
                 break;
             case 4:
-                //run tsp irl
+                //run tsp in real world
                 break;
             case 5:
                 cout << "Goodbye ! (˶ᵔ ᵕ ᵔ˶)"<< endl;
@@ -75,4 +76,56 @@ void Menu::showBacktrackingResults(){
         }
     }
     cout << "Time taken: " <<  timeTaken << " seconds" << endl;
+}
+
+void Menu::showOtherHeuristicResults() {
+    bool toConnect = false;
+    for (auto v : salesperson->getGraph().getVertexSet()) {
+        if (v->getAdj().size() != salesperson->getGraph().getVertexSet().size() - 1) {
+            cout << endl << "This graph is not fully connected!" << endl;
+            cout << "Do you want to make it connected? (y/n)" << endl;
+            string input;
+            cin >> input;
+            if (input == "y") {
+                toConnect = true;
+            }
+            break;
+        }
+    }
+
+    if (toConnect) {
+        cout << "Completing the graph..." << endl;
+        salesperson->completeGraph();
+        cout << "Complete!" << endl << endl;
+    }
+
+    double timeTaken;
+    double cost = salesperson->otherHeuristicFast(0, timeTaken);
+    cout << "Cost: " << cost << endl;
+    cout << "Path: ";
+
+    Vertex<int>* vertex = salesperson->getGraph().findVertex(0);
+    cout << "Time taken: " <<  timeTaken << " seconds" << endl;
+
+    if (salesperson->getGraph().getNumVertex() >= 100) {
+        cout << endl << "Do you want to see the path? (y/n)" << endl;
+        cout << "There are " << salesperson->getGraph().getNumVertex() << " nodes!" << endl;
+        string input;
+        cin >> input;
+
+        if (input != "y") {
+            return;
+        }
+    }
+
+    for (int i = 0; i <= salesperson->getGraph().getNumVertex(); i++) {
+        cout << vertex->getInfo();
+        vertex = vertex->getPath()->getDest();
+        if(i == salesperson->getGraph().getNumVertex()){
+            cout << endl;
+        }
+        else{
+            cout << " -> ";
+        }
+    }
 }

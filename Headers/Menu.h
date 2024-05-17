@@ -33,6 +33,8 @@ public:
      * @details Time complexity:O(V!) + O(V+1), V being the number of vertices in the graph
      */
     void showBacktrackingResults();
+
+    void showOtherHeuristicResults();
 };
 
 

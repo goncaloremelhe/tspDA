@@ -6,8 +6,10 @@
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
+#include <vector>
+#include <cmath>
 #include <chrono>
-#include "../Headers/Salesperson.h"
+
 
 using namespace std;
 
@@ -42,6 +44,13 @@ public:
      * @return a pair with the best path and its cost
      */
     pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, double &timeTaken);
+
+    void completeGraph();
+    double otherHeuristicFast(int n, double &timetaken);
+    double haversineDistance(double latA, double lonA, double latB, double lonB);
+
+
+
 };
 
 
