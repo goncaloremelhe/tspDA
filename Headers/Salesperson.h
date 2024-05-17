@@ -25,9 +25,12 @@ public:
     void readExtra();
     void readToyCSV(const string& path, bool hasName);
     void readExtraCSV(const string& path, int lines);
-    void primMST(Vertex<int>* root);
-    pair<vector<int>, double> twoApprox();
-    void primDFS(vector<int>& res, Vertex<int>* source);
+
+    void primMst(Vertex<int>* root);
+    pair<vector<Vertex<int>*>, double> twoApprox(double& time);
+    void mstDfs(vector<Vertex<int>*>& res, Vertex<int>* source);
+    void mstDfsVisit(Vertex<int>* v, vector<Vertex<int>*>& res);
+
     Graph<int> getGraph();
 
     void completeGraph();

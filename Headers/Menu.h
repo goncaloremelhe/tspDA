@@ -20,6 +20,8 @@ public:
     void showBacktrackingResults();
 
     void showOtherHeuristicResults();
+
+    void showTwoApproxResults();
 };
 
 

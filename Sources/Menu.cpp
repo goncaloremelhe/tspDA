@@ -40,7 +40,8 @@ void Menu::runAlgorithmChoiceMenu(){
                 waitForInput();
                 break;
             case 2:
-                //run triangular approx.
+                showTwoApproxResults();
+                waitForInput();
                 break;
             case 3:
                 showOtherHeuristicResults();
@@ -128,4 +129,30 @@ void Menu::showOtherHeuristicResults() {
             cout << " -> ";
         }
     }
+}
+
+void Menu::showTwoApproxResults() {
+    double time;
+
+    pair<vector<Vertex<int>*>, double> result = salesperson->twoApprox(time);
+
+    if (result.second == -1) {
+        cout << "This graph cannot be completed!" << endl;
+        return;
+    }
+
+    cout << "Cost: ";
+    cout << result.second << endl;
+    cout << "Path: ";
+    for (int i = 0; i < result.first.size(); i++) {
+        cout << result.first[i]->getInfo();
+        if(i == result.first.size() - 1){
+            cout << endl;
+        }
+        else{
+            cout << " -> ";
+        }
+    }
+    cout << "Time taken: " << time << " seconds" << endl;
+
 }

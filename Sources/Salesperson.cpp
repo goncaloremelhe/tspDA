@@ -187,10 +187,10 @@ Graph<int> Salesperson::getGraph() {
     return salesperson;
 }
 
-void Salesperson::primMST(Vertex<int>* root) {
+void Salesperson::primMst(Vertex<int>* root) {
 
     //graph cleanup
-    for (Vertex<int> *v: salesperson.getVertexSet()) {
+    for (Vertex<int> *v : salesperson.getVertexSet()) {
         v->setVisited(false);
         v->setDist(INF);
         v->setPath(nullptr);
@@ -226,6 +226,7 @@ void Salesperson::primMST(Vertex<int>* root) {
             }
         }
     }
+
 }
 
 double Salesperson::haversineDistance(double latA, double lonA, double latB, double lonB) {
@@ -269,28 +270,79 @@ void Salesperson::completeGraph() {
     }
 }
 
-pair<vector<int>, double> Salesperson::twoApprox() {
+pair<vector<Vertex<int>*>, double> Salesperson::twoApprox(double& time) {
 
-    vector<int> path;
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
     double cost = 0;
 
     //start on 0 identifier node
     Vertex<int>* root = salesperson.findVertex(0);
 
-    primMST(root);
+    primMst(root);
 
-    cost += root->getPath()->getWeight();
-    path.push_back(root->getInfo());
-    Vertex<int>* currV = root->getPath()->getOrig();
+    vector<Vertex<int>*> tour;
+    mstDfs(tour, root);  //runs dfs through mst
+    tour.push_back(root);   //complete tour
 
-    //trace back path
-    while (currV->getInfo() != root->getInfo()) {
-        cost += currV->getPath()->getWeight();
-        path.push_back(currV->getInfo());
-        currV = currV->getPath()->getOrig();
+    Vertex<int>* currV;
+    Vertex<int>* nextV;
+    bool foundEdge;
+    pair<double, double> currCoords;
+    pair<double, double> nextCoords;
+    for (int i = 0; i < salesperson.getNumVertex(); i++) {
+        currV = tour[i];
+        nextV = tour[i+1];
+        foundEdge = false;
+
+        for (Edge<int>* e : currV->getAdj()) {
+            if (e->getDest()->getInfo() == nextV->getInfo()) {
+                cost += e->getWeight();
+                foundEdge = true;
+                break;
+            }
+        }
+        if (!foundEdge) {
+            if (nodeMap.find(currV->getInfo()) == nodeMap.end() || nodeMap.find(nextV->getInfo()) == nodeMap.end()) {
+                return {tour, -1};
+            }
+            currCoords = nodeMap.at(currV->getInfo());
+            nextCoords = nodeMap.at(nextV->getInfo());
+            cost += haversineDistance(currCoords.second, currCoords.first, nextCoords.second, nextCoords.first);
+        }
+
     }
 
-    return {path, cost};
+    auto end_time = std::chrono::steady_clock::now();
+
+    time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+
+    return {tour, cost};
+}
+
+void Salesperson::mstDfs(vector<Vertex<int>*>& res, Vertex<int>* source) {
+
+    for (Vertex<int>* v : salesperson.getVertexSet()) {
+        v->setVisited(false);
+    }
+
+    mstDfsVisit(source, res);
+}
+
+void Salesperson::mstDfsVisit(Vertex<int>* v, vector<Vertex<int>*>& res) {
+
+    v->setVisited(true);
+    res.push_back(v);
+
+    if (res.size() == salesperson.getNumVertex()) return;
+
+    for (Edge<int>*& e : v->getAdj()) {
+        Vertex<int>* dest = e->getDest();
+        if (dest->getPath() == nullptr) continue;
+        if (dest->getPath()->getOrig()->getInfo() == v->getInfo() && !dest->isVisited()) {
+            mstDfsVisit(dest, res);
+        }
+    }
 }
 
 double Salesperson::otherHeuristicFast(int n, double &timetaken) {
