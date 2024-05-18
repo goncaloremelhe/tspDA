@@ -21,7 +21,7 @@ void Menu::printAlgorithmChoiceMenu() {
     cout    << "Which algorithm would you like to run?" << endl;
     cout    << "1. Backtracking algorithm"<< endl;
     cout    << "2. Triangular approximation algorithm"<< endl;
-    cout    << "3. Other heuristic"<< endl;
+    cout    << "3. Other heuristic (Nearest neighbour)"<< endl;
     cout    << "4. TSP in the real world"<< endl;
     cout    << "5. Exit" << endl;
 }
@@ -64,8 +64,6 @@ void Menu::runAlgorithmChoiceMenu(){
 void Menu::showBacktrackingResults(){
     double timeTaken;
     pair<vector <int>,double> results = salesperson->tspBacktracking(salesperson->getGraph().getVertexSet()[0],timeTaken);
-    cout << "Best Cost: ";
-    cout << results.second << endl;
     cout << "Best Path: ";
     for (int i =0; i< results.first.size(); i++) {
         cout << results.first[i];
@@ -76,59 +74,32 @@ void Menu::showBacktrackingResults(){
             cout << " -> ";
         }
     }
+    cout << "Best Cost: " << results.second << endl;
     cout << "Time taken: " <<  timeTaken << " seconds" << endl;
 }
 
 void Menu::showOtherHeuristicResults() {
-    bool toConnect = false;
-    for (auto v : salesperson->getGraph().getVertexSet()) {
-        if (v->getAdj().size() != salesperson->getGraph().getVertexSet().size() - 1) {
-            cout << endl << "This graph is not fully connected!" << endl;
-            cout << "Do you want to make it connected? (y/n)" << endl;
-            string input;
-            cin >> input;
-            if (input == "y") {
-                toConnect = true;
-            }
-            break;
-        }
+    double time;
+    pair<vector<int>, double> result = salesperson->nearestNeighbour(time);
+
+    if (result.second == -1) {
+        cout << "This graph cannot be completed!" << endl;
+        return;
     }
 
-    if (toConnect) {
-        cout << "Completing the graph..." << endl;
-        salesperson->completeGraph();
-        cout << "Complete!" << endl << endl;
-    }
-
-    double timeTaken;
-    double cost = salesperson->otherHeuristicFast(0, timeTaken);
-    cout << "Cost: " << cost << endl;
+    cout << result.second << endl;
     cout << "Path: ";
-
-    Vertex<int>* vertex = salesperson->getGraph().findVertex(0);
-    cout << "Time taken: " <<  timeTaken << " seconds" << endl;
-
-    if (salesperson->getGraph().getNumVertex() >= 100) {
-        cout << endl << "Do you want to see the path? (y/n)" << endl;
-        cout << "There are " << salesperson->getGraph().getNumVertex() << " nodes!" << endl;
-        string input;
-        cin >> input;
-
-        if (input != "y") {
-            return;
-        }
-    }
-
-    for (int i = 0; i <= salesperson->getGraph().getNumVertex(); i++) {
-        cout << vertex->getInfo();
-        vertex = vertex->getPath()->getDest();
-        if(i == salesperson->getGraph().getNumVertex()){
+    for (int i = 0; i < result.first.size(); i++) {
+        cout << result.first[i];
+        if(i == result.first.size() - 1){
             cout << endl;
         }
         else{
             cout << " -> ";
         }
     }
+    cout << "Cost: " << result.second << "\n";
+    cout << "Time taken: " << time << " seconds" << endl;
 }
 
 void Menu::showTwoApproxResults() {
@@ -141,8 +112,6 @@ void Menu::showTwoApproxResults() {
         return;
     }
 
-    cout << "Cost: ";
-    cout << result.second << endl;
     cout << "Path: ";
     for (int i = 0; i < result.first.size(); i++) {
         cout << result.first[i]->getInfo();
@@ -153,6 +122,6 @@ void Menu::showTwoApproxResults() {
             cout << " -> ";
         }
     }
+    cout << "Cost: " << result.second << endl;
     cout << "Time taken: " << time << " seconds" << endl;
-
 }

@@ -17,6 +17,7 @@ class Salesperson {
 private:
     Graph<int> salesperson;
     unordered_map<int,pair<double,double>> nodeMap;
+    vector<vector<double>> distMap;
 public:
     /**
      * Reads user input to choose which graph to read
@@ -85,8 +86,6 @@ public:
      */
     pair<vector<int>, double> tspBacktracking(Vertex<int> *startVertex, double &timeTaken);
 
-    void completeGraph();
-    double otherHeuristicFast(int n, double &timetaken);
     /**
      * Calculates the distance between 2 points using the haversine formula
      * @param latA
@@ -97,7 +96,13 @@ public:
      */
     double haversineDistance(double latA, double lonA, double latB, double lonB);
 
-
+    /**
+     * Calculates a path from node '0' using the Nearest Neighbour algorithm
+     * @param timeTaken
+     * @return a pair with the path found and its cost
+     * @details Time complexity: O(V^2), being V the number of vertices in the graph
+     */
+    pair<vector<int>,double> nearestNeighbour(double &timeTaken);
 
 };
 

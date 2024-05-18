@@ -1,3 +1,4 @@
+#include <stack>
 #include "../Headers/Salesperson.h"
 #include "../Headers/MutablePriorityQueue.h"
 
@@ -121,6 +122,17 @@ void Salesperson::readToyCSV(const string& path, bool hasName) {
         }
 
     }
+
+    for (auto v : salesperson.getVertexSet()) {
+        vector<double> distRow;
+        for (int j = 0; j < salesperson.getNumVertex(); j++) {
+            distRow.push_back(0);
+        }
+        for (auto e : v->getAdj()) {
+            distRow[e->getDest()->getInfo()] = e->getWeight();
+        }
+        distMap.push_back(distRow);
+    }
 }
 
 void Salesperson::readCSV(const string& path, bool isNode) {
@@ -154,6 +166,19 @@ void Salesperson::readCSV(const string& path, bool isNode) {
             salesperson.addBidirectionalEdge(inti1, inti2, doublei3);
         }
     }
+
+    for (auto v : salesperson.getVertexSet()) {
+        vector<double> distRow;
+        for (int j = 0; j < salesperson.getNumVertex(); j++) {
+            distRow.push_back(0);
+        }
+        for (auto e : v->getAdj()) {
+            distRow[e->getDest()->getInfo()] = e->getWeight();
+        }
+        distMap.push_back(distRow);
+        v->setVisited(false);
+    }
+
 }
 
 void Salesperson::readExtraCSV(const string& path, int lines) {
@@ -179,6 +204,18 @@ void Salesperson::readExtraCSV(const string& path, int lines) {
         salesperson.addVertex(intNode);
         nodeMap.insert({intNode, make_pair(doubleLon, doubleLat)});
         lines--;
+    }
+
+    for (auto v : salesperson.getVertexSet()) {
+        vector<double> distRow;
+        for (int j = 0; j < salesperson.getNumVertex(); j++) {
+            distRow.push_back(0);
+        }
+        for (auto e : v->getAdj()) {
+            distRow[e->getDest()->getInfo()] = e->getWeight();
+        }
+        distMap.push_back(distRow);
+        v->setVisited(false);
     }
 }
 
@@ -243,31 +280,6 @@ double Salesperson::haversineDistance(double latA, double lonA, double latB, dou
     double rad = 6365000;
     double c = 2 * asin(sqrt(a));
     return rad * c;
-}
-
-void Salesperson::completeGraph() {
-    int size = salesperson.getNumVertex();
-    for (auto v : salesperson.getVertexSet()) {
-        if (v->getAdj().size() != size - 1) {
-            bool hasEdge[size];
-            for (int i = 0; i < size; i++) {
-                hasEdge[i] = false;
-            }
-            hasEdge[v->getInfo()] = true;
-            for (auto edge : v->getAdj()) {
-                hasEdge[edge->getDest()->getInfo()] = true;
-            }
-            for (int i = 0; i < size; i++) {
-                if (!hasEdge[i]) {
-                    nodeMap[v->getInfo()].first;
-                    double latA = nodeMap[v->getInfo()].second, lonA = nodeMap[v->getInfo()].first;
-                    double latB = nodeMap[i].second, lonB = nodeMap[i].first;
-                    double cost = haversineDistance(latA, lonA, latB, lonB);
-                    salesperson.addBidirectionalEdge(v->getInfo(), i, cost);
-                }
-            }
-        }
-    }
 }
 
 pair<vector<Vertex<int>*>, double> Salesperson::twoApprox(double& time) {
@@ -345,45 +357,6 @@ void Salesperson::mstDfsVisit(Vertex<int>* v, vector<Vertex<int>*>& res) {
     }
 }
 
-double Salesperson::otherHeuristicFast(int n, double &timetaken) {
-
-    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
-
-    double cost = 0.0;
-    for (auto v : salesperson.getVertexSet()) {
-        v->setPath(NULL);
-        v->setVisited(false);
-    }
-    Vertex<int>* vertex = salesperson.findVertex(n);
-    vertex->setVisited(true);
-    for (int i = 0; i < salesperson.getNumVertex(); i++) {
-        Edge<int>* nearestNeighbour = nullptr;
-        double nearestDistance = INF;
-        for (auto edge : vertex->getAdj()) {
-            if (!edge->getDest()->isVisited() and edge->getWeight() < nearestDistance) {
-                nearestDistance = edge->getWeight();
-                nearestNeighbour = edge;
-            }
-
-            if (i == salesperson.getNumVertex() - 1 && edge->getDest()->getInfo() == n) {
-                nearestDistance = edge->getWeight();
-                nearestNeighbour = edge;
-            }
-        }
-
-        vertex->setPath(nearestNeighbour);
-        vertex = nearestNeighbour->getDest();
-        vertex->setVisited(true);
-        cost += nearestDistance;
-    }
-
-    auto end_time = std::chrono::steady_clock::now();
-
-    timetaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-
-    return cost;
-}
-
 void Salesperson::tspWork(Vertex<int>* curr, Vertex<int>* start, vector<int>& path, double& pathCost, vector<int>& bestPath, double& bestCost) {
     curr->setVisited(true);
     path.push_back(curr->getInfo());
@@ -435,4 +408,58 @@ pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex,
     timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
     return {bestPath, bestCost};
+}
+
+pair<vector<int>,double> Salesperson::nearestNeighbour(double &timeTaken) {
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
+    vector<int> path;
+    double cost = 0;
+    Vertex<int>* origin = salesperson.findVertex(0);
+    path.push_back(0);
+    for (int i = 0; i < salesperson.getNumVertex() - 1; i++) {
+        origin->setVisited(true);
+        double nearestCost = INF;
+        Vertex<int>* nearestNeighbour = nullptr;
+        for (auto v : salesperson.getVertexSet()) {
+            double vertexCost;
+            if (v == origin) {continue;}
+            if (!v->isVisited()) {
+                if (distMap[origin->getInfo()][v->getInfo()] > 0) {
+                    vertexCost = distMap[origin->getInfo()][v->getInfo()];
+                } else {
+                    double latA = nodeMap[origin->getInfo()].second, lonA = nodeMap[origin->getInfo()].first;
+                    double latB = nodeMap[v->getInfo()].second, lonB = nodeMap[v->getInfo()].first;
+                    vertexCost = haversineDistance(latA, lonA, latB, lonB);
+                }
+
+                if (vertexCost < nearestCost) {
+                    nearestCost = vertexCost;
+                    nearestNeighbour = v;
+                }
+            }
+        }
+
+        if (nearestNeighbour == nullptr) {
+            cout << "caught nullptr!\n";
+            return {vector<int>(), -1};
+        }
+
+        origin = nearestNeighbour;
+        cost += nearestCost;
+        path.push_back(origin->getInfo());
+    }
+
+    if (distMap[path.back()][0] > 0) {
+        cost += distMap[path.back()][0];
+    } else {
+        double latA = nodeMap[0].second, lonA = nodeMap[0].first;
+        double latB = nodeMap[path.back()].second, lonB = nodeMap[path.back()].first;
+        cost += haversineDistance(latA, lonA, latB, lonB);
+    }
+    path.push_back(0);
+
+    auto end_time = std::chrono::steady_clock::now();
+    timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+    return {path, cost};
 }
