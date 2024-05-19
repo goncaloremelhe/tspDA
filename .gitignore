@@ -27,9 +27,6 @@ build/
 # Ignore project-specific files (adjust this based on your project structure)
 project-specific-file.txt
 
-#Ignore doxygen html
-/html/
-
 # Ignore latex file
 /latex/
 
