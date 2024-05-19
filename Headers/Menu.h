@@ -37,6 +37,8 @@ public:
     void showOtherHeuristicResults();
 
     void showTwoApproxResults();
+
+    void showChristofidesResults();
 };
 
 

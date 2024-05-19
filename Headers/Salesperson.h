@@ -9,6 +9,7 @@
 #include <vector>
 #include <cmath>
 #include <chrono>
+#include <algorithm>
 
 
 using namespace std;
@@ -130,6 +131,13 @@ public:
      */
     pair<vector<int>,double> nearestNeighbour(double &timeTaken);
 
+    /**
+     * Calculates a path from a node chosen by the user using Christofides algorithm
+     * @param timeTaken
+     * @return a pair with the path found and its cost
+     * @details Time complexity: O(V^2), being V the number of vertices in the graph
+     */
+    pair<vector<int>, double> christofidesAlgorithm(double &timeTaken, int start);
 };
 
 

@@ -48,7 +48,7 @@ void Menu::runAlgorithmChoiceMenu(){
                 waitForInput();
                 break;
             case 4:
-                //run tsp in real world
+                showChristofidesResults();
                 break;
             case 5:
                 cout << "Goodbye ! (˶ᵔ ᵕ ᵔ˶)"<< endl;
@@ -87,7 +87,6 @@ void Menu::showOtherHeuristicResults() {
         return;
     }
 
-    cout << result.second << endl;
     cout << "Path: ";
     for (int i = 0; i < result.first.size(); i++) {
         cout << result.first[i];
@@ -115,6 +114,35 @@ void Menu::showTwoApproxResults() {
     cout << "Path: ";
     for (int i = 0; i < result.first.size(); i++) {
         cout << result.first[i]->getInfo();
+        if(i == result.first.size() - 1){
+            cout << endl;
+        }
+        else{
+            cout << " -> ";
+        }
+    }
+    cout << "Cost: " << result.second << endl;
+    cout << "Time taken: " << time << " seconds" << endl;
+}
+
+void Menu::showChristofidesResults() {
+    double time;
+
+    cout << "Choose where you want to start!" << endl;
+    cout << "Between 0 and " << salesperson->getGraph().getNumVertex() - 1 << "!" << endl;
+    int init;
+    cin >> init;
+
+    pair<vector<int>, double> result = salesperson->christofidesAlgorithm(time, init);
+
+    if (result.second == -1) {
+        cout << "This graph cannot be completed!" << endl;
+        return;
+    }
+
+    cout << "Path: ";
+    for (int i = 0; i < result.first.size(); i++) {
+        cout << result.first[i];
         if(i == result.first.size() - 1){
             cout << endl;
         }

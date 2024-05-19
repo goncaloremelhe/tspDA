@@ -1,4 +1,5 @@
 #include <stack>
+#include <algorithm>
 #include "../Headers/Salesperson.h"
 #include "../Headers/MutablePriorityQueue.h"
 
@@ -50,7 +51,7 @@ void Salesperson::readRealWorld() {
     cout << "2nd Graph - 5000 nodes (very slow)" << endl;
     string option;
     cin >> option;
-    if (option < "0" or option > "2") {
+    if (option < "0" or option > "3") {
         cout << "Invalid number.";
         return;
     }
@@ -126,7 +127,7 @@ void Salesperson::readToyCSV(const string& path, bool hasName) {
     for (auto v : salesperson.getVertexSet()) {
         vector<double> distRow;
         for (int j = 0; j < salesperson.getNumVertex(); j++) {
-            distRow.push_back(0);
+            distRow.push_back(-1);
         }
         for (auto e : v->getAdj()) {
             distRow[e->getDest()->getInfo()] = e->getWeight();
@@ -167,16 +168,17 @@ void Salesperson::readCSV(const string& path, bool isNode) {
         }
     }
 
-    for (auto v : salesperson.getVertexSet()) {
-        vector<double> distRow;
-        for (int j = 0; j < salesperson.getNumVertex(); j++) {
-            distRow.push_back(0);
+    if (!isNode) {
+        for (auto v : salesperson.getVertexSet()) {
+            vector<double> distRow;
+            for (int j = 0; j < salesperson.getNumVertex(); j++) {
+                distRow.push_back(-1);
+            }
+            for (auto e : v->getAdj()) {
+                distRow[e->getDest()->getInfo()] = e->getWeight();
+            }
+            distMap.push_back(distRow);
         }
-        for (auto e : v->getAdj()) {
-            distRow[e->getDest()->getInfo()] = e->getWeight();
-        }
-        distMap.push_back(distRow);
-        v->setVisited(false);
     }
 
 }
@@ -204,18 +206,6 @@ void Salesperson::readExtraCSV(const string& path, int lines) {
         salesperson.addVertex(intNode);
         nodeMap.insert({intNode, make_pair(doubleLon, doubleLat)});
         lines--;
-    }
-
-    for (auto v : salesperson.getVertexSet()) {
-        vector<double> distRow;
-        for (int j = 0; j < salesperson.getNumVertex(); j++) {
-            distRow.push_back(0);
-        }
-        for (auto e : v->getAdj()) {
-            distRow[e->getDest()->getInfo()] = e->getWeight();
-        }
-        distMap.push_back(distRow);
-        v->setVisited(false);
     }
 }
 
@@ -410,14 +400,21 @@ pair<vector<int>, double> Salesperson::tspBacktracking(Vertex<int>* startVertex,
     return {bestPath, bestCost};
 }
 
+
 pair<vector<int>,double> Salesperson::nearestNeighbour(double &timeTaken) {
     std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+
+    for (auto v : salesperson.getVertexSet()) {
+        v->setVisited(false);
+    }
 
     vector<int> path;
     double cost = 0;
     Vertex<int>* origin = salesperson.findVertex(0);
     path.push_back(0);
+    double costTemp = 0;
     for (int i = 0; i < salesperson.getNumVertex() - 1; i++) {
+        costTemp = cost;
         origin->setVisited(true);
         double nearestCost = INF;
         Vertex<int>* nearestNeighbour = nullptr;
@@ -425,7 +422,7 @@ pair<vector<int>,double> Salesperson::nearestNeighbour(double &timeTaken) {
             double vertexCost;
             if (v == origin) {continue;}
             if (!v->isVisited()) {
-                if (distMap[origin->getInfo()][v->getInfo()] > 0) {
+                if (distMap[origin->getInfo()][v->getInfo()] >= 0) {
                     vertexCost = distMap[origin->getInfo()][v->getInfo()];
                 } else {
                     double latA = nodeMap[origin->getInfo()].second, lonA = nodeMap[origin->getInfo()].first;
@@ -462,4 +459,77 @@ pair<vector<int>,double> Salesperson::nearestNeighbour(double &timeTaken) {
     auto end_time = std::chrono::steady_clock::now();
     timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
     return {path, cost};
+}
+
+pair<vector<int>, double> Salesperson::christofidesAlgorithm(double &timeTaken, int start) {
+
+    std::chrono::time_point<std::chrono::steady_clock> start_time = std::chrono::steady_clock::now();
+    vector<int> tour;
+    double cost = 0;
+
+    Graph<int> newGraph;
+
+    Vertex<int>* init = salesperson.findVertex(start);
+    primMst(init);
+    for (int i = 0; i < salesperson.getNumVertex(); i++) {
+        newGraph.addVertex(i);
+    }
+
+    for (auto v : salesperson.getVertexSet()) {
+        Edge<int>* edge = v->getPath();
+        if (edge != nullptr) {
+            newGraph.addBidirectionalEdge(edge->getOrig()->getInfo(), edge->getDest()->getInfo(), edge->getWeight());
+        }
+    }
+
+    vector<Vertex<int>*> oddDegreeVertices;
+
+    for (Vertex<int>* v : newGraph.getVertexSet()) {
+        unsigned int degree = v->getAdj().size();
+        if (degree % 2 == 1) {
+            oddDegreeVertices.push_back(v);
+        }
+    }
+
+    while (!oddDegreeVertices.empty()) {
+        auto firstIt = oddDegreeVertices.begin();
+        auto firstV = *firstIt;
+        auto nearestIt = oddDegreeVertices.end();
+        auto secondIt = oddDegreeVertices.begin() + 1;
+        double dis = INF;
+        while (secondIt != oddDegreeVertices.end()) {
+            auto secondV = *secondIt;
+            if (distMap[firstV->getInfo()][secondV->getInfo()] < dis and distMap[firstV->getInfo()][secondV->getInfo()] >= 0) {
+                nearestIt = secondIt;
+                dis = distMap[firstV->getInfo()][secondV->getInfo()];
+            }
+
+            secondIt++;
+        }
+
+        if (nearestIt == oddDegreeVertices.end()) {
+            cout << "Sem solucao!\n";
+            return {tour, -1};
+        }
+
+        newGraph.addBidirectionalEdge(firstV->getInfo(), (*nearestIt)->getInfo(), distMap[firstV->getInfo()][(*nearestIt)->getInfo()]);
+        oddDegreeVertices.erase(nearestIt);
+        oddDegreeVertices.erase(firstIt);
+    }
+
+    tour = newGraph.dfs(start);
+
+    tour.push_back(start);
+
+    for (int i = 0; i < tour.size() - 1; i++) {
+        if (distMap[i][i+1] == -1) {
+            cout << "Sem solucao!\n";
+            return {tour, -1};
+        }
+        cost += distMap[i][i+1];
+    }
+
+    auto end_time = std::chrono::steady_clock::now();
+    timeTaken = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+    return {tour, cost};
 }
