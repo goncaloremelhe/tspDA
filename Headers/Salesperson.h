@@ -55,9 +55,35 @@ public:
      */
     void readExtraCSV(const string& path, int lines);
 
+    /**
+     * Builds an MST following Prim's starting at a specific node; MST is stored in the graph using the path field from Vertex.
+     * @param root pointer to start node
+     * @details Time Complexity: O(V), V being the number vertices
+     */
     void primMst(Vertex<int>* root);
+
+    /**
+     * Calculates a 2-approximation TSP solution using the triangular inequality property by building an MST and doing a DFS through it.
+     * @param time return argument of time taken to process
+     * @return pair made up of the path (a vector of pointers to Vertex) and the cost;
+     * @details Time Complexity: O(V + E), V being the number of vertices and E the number of edges
+     */
     pair<vector<Vertex<int>*>, double> twoApprox(double& time);
+
+    /**
+     * Finds a DFS path through the path field of Vertex (used to represent an MST), i.e., builds a pre order of an MST.
+     * @param res return argument of DFS
+     * @param source start of DFS
+     * @details Time Complexity: O(V + E), V being the number of vertices and E the number of edges
+     */
     void mstDfs(vector<Vertex<int>*>& res, Vertex<int>* source);
+
+    /**
+     * Recursive function that does all the DFS work.
+     * @param v
+     * @param res cumulative vector storing the DFS path
+     * @details Time Complexity: O(V + E), V being the number of vertices and E the number of edges
+     */
     void mstDfsVisit(Vertex<int>* v, vector<Vertex<int>*>& res);
 
     /**
